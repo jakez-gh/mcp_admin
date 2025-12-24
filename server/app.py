@@ -1,11 +1,16 @@
-import secrets
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from server import config, storage
-from server.oauth import build_auth_url, exchange_code_for_tokens, fetch_user_email
+from server.oauth import (
+    build_auth_url,
+    exchange_code_for_tokens,
+    fetch_user_email,
+    generate_state,
+    verify_state,
+)
 from server.tools import all_tool_metadata
 
 
@@ -45,15 +50,17 @@ async def gmail_connect() -> RedirectResponse:
     if not config.GMAIL_TOKEN_ENCRYPTION_KEY:
         raise HTTPException(status_code=500, detail="Token encryption is not configured")
 
-    state = secrets.token_urlsafe(16)
+    state = generate_state()
     url = build_auth_url(state)
     return RedirectResponse(url)
 
 
 @app.get("/admin/gmail/callback", response_class=HTMLResponse)
-async def gmail_callback(code: Optional[str] = None) -> str:
-    if not code:
-        raise HTTPException(status_code=400, detail="Missing OAuth code")
+async def gmail_callback(code: Optional[str] = None, state: Optional[str] = None) -> str:
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing OAuth code or state")
+    if not verify_state(state):
+        raise HTTPException(status_code=400, detail="Invalid OAuth state")
 
     token_payload = exchange_code_for_tokens(code)
     refresh_token = token_payload.get("refresh_token")
