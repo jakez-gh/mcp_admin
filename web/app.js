@@ -1,3 +1,5 @@
+import { buildFolderTree, buildToolQueryParams } from "./lib.js";
+
 const state = {
   folders: [],
   labels: [],
@@ -69,28 +71,12 @@ function showToast(message, isError = false) {
   setTimeout(() => elements.toast.classList.remove("show"), 3000);
 }
 
-function buildFolderTree() {
-  const map = new Map();
-  state.folders.forEach((folder) => map.set(folder.id, { ...folder, children: [] }));
-  const roots = [];
-
-  map.forEach((folder) => {
-    if (folder.parentId && map.has(folder.parentId)) {
-      map.get(folder.parentId).children.push(folder);
-    } else {
-      roots.push(folder);
-    }
-  });
-
-  return roots;
-}
-
 function renderFolderTree() {
   elements.folderTree.innerHTML = "";
   const tree = document.createElement("div");
   tree.className = "tree";
 
-  const roots = buildFolderTree();
+  const roots = buildFolderTree(state.folders);
   if (roots.length === 0) {
     tree.textContent = "No folders yet.";
   } else {
@@ -333,18 +319,8 @@ async function loadData() {
 }
 
 async function loadTools(query = {}) {
-  const params = new URLSearchParams();
-  if (query.search) {
-    params.set("search", query.search);
-  }
-  if (query.folderPath) {
-    params.set("folderPath", query.folderPath);
-  }
-  if (query.labels && query.labels.length > 0) {
-    params.set("labels", query.labels.join(","));
-  }
-
-  const path = params.toString() ? `/api/tools?${params}` : "/api/tools";
+  const params = buildToolQueryParams(query);
+  const path = params ? `/api/tools?${params}` : "/api/tools";
   try {
     const tools = await apiRequest(path);
     state.tools = tools;
