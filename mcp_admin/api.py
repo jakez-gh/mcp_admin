@@ -4,7 +4,7 @@ from pathlib import Path
 import sqlite3
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from mcp_admin.db import apply_migrations, get_connection
@@ -263,8 +263,8 @@ def create_app(
             "parentId": updated["parent_id"],
         }
 
-    @app.delete("/api/folders/{folder_id}", status_code=204)
-    def delete_folder(folder_id: int) -> None:
+    @app.delete("/api/folders/{folder_id}", response_class=Response, status_code=204)
+    def delete_folder(folder_id: int) -> Response:
         repo = FolderRepository(conn)
         row = repo.get(folder_id)
         if row is None:
@@ -273,6 +273,7 @@ def create_app(
             repo.delete(folder_id)
         except sqlite3.IntegrityError as exc:
             raise HTTPException(status_code=400, detail="Cannot delete root folder") from exc
+        return Response(status_code=204)
 
     @app.get("/api/labels")
     def list_labels() -> list[dict]:
@@ -316,8 +317,8 @@ def create_app(
             "parentId": updated["parent_id"],
         }
 
-    @app.delete("/api/labels/{label_id}", status_code=204)
-    def delete_label(label_id: int) -> None:
+    @app.delete("/api/labels/{label_id}", response_class=Response, status_code=204)
+    def delete_label(label_id: int) -> Response:
         repo = LabelRepository(conn)
         row = repo.get(label_id)
         if row is None:
@@ -326,6 +327,7 @@ def create_app(
             repo.delete(label_id)
         except sqlite3.IntegrityError as exc:
             raise HTTPException(status_code=400, detail="Cannot delete root label") from exc
+        return Response(status_code=204)
 
     @app.get("/api/tools")
     def list_tools(
@@ -432,13 +434,14 @@ def create_app(
             raise HTTPException(status_code=500, detail="Tool update failed")
         return tool
 
-    @app.delete("/api/tools/{tool_id}", status_code=204)
-    def delete_tool(tool_id: int) -> None:
+    @app.delete("/api/tools/{tool_id}", response_class=Response, status_code=204)
+    def delete_tool(tool_id: int) -> Response:
         repo = ToolRepository(conn)
         row = repo.get(tool_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Tool not found")
         repo.delete(tool_id)
+        return Response(status_code=204)
 
     @app.post("/api/tools/{tool_id}/move")
     def move_tool(tool_id: int, request: MoveToolRequest) -> dict:
