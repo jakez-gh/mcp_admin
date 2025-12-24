@@ -2,12 +2,12 @@
 
 This repository uses GitHub Actions for linting and tests. Configure branch protection rules
 for the default branch (typically `main`) to require the following checks to pass before
-merging:
+merging (the check names appear as `Workflow / Job` in GitHub):
 
-- `Lint`
-- `Unit Tests`
-- `Integration Tests`
-- `E2E Tests`
+- `Lint / Lint`
+- `Unit Tests / Unit Tests`
+- `Integration Tests / Integration Tests`
+- `E2E Tests / E2E Tests`
 
 ## Notes
 
