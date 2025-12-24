@@ -56,6 +56,8 @@ class FolderRepository:
         self.conn.commit()
 
     def move(self, folder_id: int, new_parent_id: int) -> None:
+        if folder_id == new_parent_id or self._is_descendant(new_parent_id, folder_id):
+            raise ValueError("Cannot move folder into itself or its descendants")
         self.conn.execute(
             "UPDATE folder_tree SET parent_id = ? WHERE folder_id = ?;",
             (new_parent_id, folder_id),
@@ -67,3 +69,24 @@ class FolderRepository:
         if row is None:
             raise ValueError(f"Folder {folder_id} not found")
         return self.create(f"{row['name']} (copy)", new_parent_id)
+
+    def _is_descendant(self, candidate_id: int, folder_id: int) -> bool:
+        row = self.conn.execute(
+            """
+            WITH RECURSIVE descendants(id) AS (
+                SELECT folder_id
+                FROM folder_tree
+                WHERE folder_id = ?
+                UNION ALL
+                SELECT folder_tree.folder_id
+                FROM folder_tree
+                JOIN descendants ON folder_tree.parent_id = descendants.id
+            )
+            SELECT 1
+            FROM descendants
+            WHERE id = ?
+            LIMIT 1;
+            """,
+            (folder_id, candidate_id),
+        ).fetchone()
+        return row is not None

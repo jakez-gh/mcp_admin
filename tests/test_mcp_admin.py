@@ -63,6 +63,13 @@ class FolderBehaviorTestCase(unittest.TestCase):
         self.assertEqual(copy_row["parent_id"], 1)
         self.assertIn("copy", copy_row["name"])
 
+    def test_move_folder_prevents_cycles(self) -> None:
+        parent_id = self.folders.create("parent")
+        child_id = self.folders.create("child", parent_id)
+
+        with self.assertRaises(ValueError):
+            self.folders.move(parent_id, child_id)
+
 
 class LabelBehaviorTestCase(unittest.TestCase):
     def setUp(self) -> None:
@@ -85,6 +92,13 @@ class LabelBehaviorTestCase(unittest.TestCase):
         self.assertIsNone(child_row)
         grandchild_row = self.labels.get(grandchild_id)
         self.assertEqual(grandchild_row["parent_id"], parent_id)
+
+    def test_move_label_prevents_cycles(self) -> None:
+        parent_id = self.labels.create("parent")
+        child_id = self.labels.create("child", parent_id)
+
+        with self.assertRaises(ValueError):
+            self.labels.move(parent_id, child_id)
 
     def test_copy_tool_includes_labels(self) -> None:
         tool_id = self.tools.create("tool")

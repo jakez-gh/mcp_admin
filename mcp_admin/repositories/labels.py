@@ -56,6 +56,8 @@ class LabelRepository:
         self.conn.commit()
 
     def move(self, label_id: int, new_parent_id: int) -> None:
+        if label_id == new_parent_id or self._is_descendant(new_parent_id, label_id):
+            raise ValueError("Cannot move label into itself or its descendants")
         self.conn.execute(
             "UPDATE label_tree SET parent_id = ? WHERE label_id = ?;",
             (new_parent_id, label_id),
@@ -67,3 +69,24 @@ class LabelRepository:
         if row is None:
             raise ValueError(f"Label {label_id} not found")
         return self.create(f"{row['name']} (copy)", new_parent_id)
+
+    def _is_descendant(self, candidate_id: int, label_id: int) -> bool:
+        row = self.conn.execute(
+            """
+            WITH RECURSIVE descendants(id) AS (
+                SELECT label_id
+                FROM label_tree
+                WHERE label_id = ?
+                UNION ALL
+                SELECT label_tree.label_id
+                FROM label_tree
+                JOIN descendants ON label_tree.parent_id = descendants.id
+            )
+            SELECT 1
+            FROM descendants
+            WHERE id = ?
+            LIMIT 1;
+            """,
+            (label_id, candidate_id),
+        ).fetchone()
+        return row is not None
