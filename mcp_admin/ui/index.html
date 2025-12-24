@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MCP Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        margin: 2rem;
+        color: #1f2937;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .tool-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .status {
+        font-weight: 600;
+      }
+      button {
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid #cbd5f5;
+        background: #eef2ff;
+        cursor: pointer;
+      }
+      nav {
+        margin-top: 1.5rem;
+        color: #4b5563;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>MCP Admin</h1>
+      <span data-testid="label-current">Root</span>
+    </header>
+
+    <nav data-testid="label-nav">
+      <button type="button" data-testid="next-label">Next label</button>
+    </nav>
+
+    <section id="tool-list">
+      <div class="tool-card" data-tool="echo">
+        <div>
+          <div class="tool-name">Echo</div>
+          <div class="status" data-testid="status-echo">Enabled</div>
+        </div>
+        <button type="button" data-testid="toggle-echo">Disable</button>
+      </div>
+      <div class="tool-card" data-tool="report">
+        <div>
+          <div class="tool-name">Report</div>
+          <div class="status" data-testid="status-report">Enabled</div>
+        </div>
+        <button type="button" data-testid="toggle-report">Disable</button>
+      </div>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
