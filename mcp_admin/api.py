@@ -169,7 +169,12 @@ def _fetch_tool(
 def _parse_label_filter(label_ids: str | None) -> list[int]:
     if not label_ids:
         return []
-    return [int(label_id) for label_id in label_ids.split(",") if label_id]
+    parsed: list[int] = []
+    for label_id in label_ids.split(","):
+        if not label_id:
+            continue
+        parsed.append(int(label_id))
+    return parsed
 
 
 def create_app(
@@ -224,7 +229,10 @@ def create_app(
     def create_folder(request: FolderRequest) -> dict:
         parent_id = request.parentId or 1
         repo = FolderRepository(conn)
-        folder_id = repo.create(request.name, parent_id)
+        try:
+            folder_id = repo.create(request.name, parent_id)
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Parent folder not found") from exc
         row = repo.get(folder_id)
         if row is None:
             raise HTTPException(status_code=500, detail="Folder creation failed")
@@ -242,7 +250,12 @@ def create_app(
             raise HTTPException(status_code=404, detail="Folder not found")
         repo.update(folder_id, request.name)
         if request.parentId is not None and request.parentId != row["parent_id"]:
-            repo.move(folder_id, request.parentId)
+            try:
+                repo.move(folder_id, request.parentId)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            except sqlite3.IntegrityError as exc:
+                raise HTTPException(status_code=400, detail="Parent folder not found") from exc
         updated = repo.get(folder_id)
         return {
             "id": updated["id"],
@@ -256,7 +269,10 @@ def create_app(
         row = repo.get(folder_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Folder not found")
-        repo.delete(folder_id)
+        try:
+            repo.delete(folder_id)
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Cannot delete root folder") from exc
 
     @app.get("/api/labels")
     def list_labels() -> list[dict]:
@@ -266,7 +282,10 @@ def create_app(
     def create_label(request: LabelRequest) -> dict:
         parent_id = request.parentId or 1
         repo = LabelRepository(conn)
-        label_id = repo.create(request.name, parent_id)
+        try:
+            label_id = repo.create(request.name, parent_id)
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Parent label not found") from exc
         row = repo.get(label_id)
         if row is None:
             raise HTTPException(status_code=500, detail="Label creation failed")
@@ -284,7 +303,12 @@ def create_app(
             raise HTTPException(status_code=404, detail="Label not found")
         repo.update(label_id, request.name)
         if request.parentId is not None and request.parentId != row["parent_id"]:
-            repo.move(label_id, request.parentId)
+            try:
+                repo.move(label_id, request.parentId)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            except sqlite3.IntegrityError as exc:
+                raise HTTPException(status_code=400, detail="Parent label not found") from exc
         updated = repo.get(label_id)
         return {
             "id": updated["id"],
@@ -298,7 +322,10 @@ def create_app(
         row = repo.get(label_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Label not found")
-        repo.delete(label_id)
+        try:
+            repo.delete(label_id)
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Cannot delete root label") from exc
 
     @app.get("/api/tools")
     def list_tools(
@@ -334,7 +361,10 @@ def create_app(
                 for tool in tools
                 if lowered in (tool.get("folderPath") or "").lower()
             ]
-        label_filter = set(_parse_label_filter(labels))
+        try:
+            label_filter = set(_parse_label_filter(labels))
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Invalid label filter") from exc
         if label_filter:
             tools = [
                 tool
@@ -347,12 +377,15 @@ def create_app(
     def create_tool(request: ToolRequest) -> dict:
         repo = ToolRepository(conn)
         folder_id = request.folderId or 1
-        tool_id = repo.create(
-            request.name,
-            folder_id,
-            description=request.description,
-            enabled=request.enabled,
-        )
+        try:
+            tool_id = repo.create(
+                request.name,
+                folder_id,
+                description=request.description,
+                enabled=request.enabled,
+            )
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Folder not found") from exc
         conn.execute("DELETE FROM tool_labels WHERE tool_id = ?;", (tool_id,))
         for label_id in request.labelIds:
             repo.add_label(tool_id, int(label_id))
@@ -374,13 +407,16 @@ def create_app(
         row = repo.get(tool_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Tool not found")
-        repo.update(
-            tool_id,
-            request.name,
-            description=request.description,
-            enabled=request.enabled,
-            folder_id=request.folderId or row["folder_id"],
-        )
+        try:
+            repo.update(
+                tool_id,
+                request.name,
+                description=request.description,
+                enabled=request.enabled,
+                folder_id=request.folderId or row["folder_id"],
+            )
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Folder not found") from exc
         conn.execute("DELETE FROM tool_labels WHERE tool_id = ?;", (tool_id,))
         for label_id in request.labelIds:
             repo.add_label(tool_id, int(label_id))
@@ -410,7 +446,10 @@ def create_app(
         row = repo.get(tool_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Tool not found")
-        repo.move(tool_id, request.folderId or 1)
+        try:
+            repo.move(tool_id, request.folderId or 1)
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail="Folder not found") from exc
         tool_labels = _load_tool_labels(conn)
         tool = _fetch_tool(
             conn,
