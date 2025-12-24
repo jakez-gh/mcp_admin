@@ -1,3 +1,6 @@
+import pytest
+
+pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
 
 from mcp_admin.api import create_app
