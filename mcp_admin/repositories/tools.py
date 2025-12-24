@@ -8,10 +8,16 @@ class ToolRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.conn = conn
 
-    def create(self, name: str, folder_id: int = 1) -> int:
+    def create(
+        self,
+        name: str,
+        folder_id: int = 1,
+        description: str = "",
+        enabled: bool = True,
+    ) -> int:
         cur = self.conn.execute(
-            "INSERT INTO tools (name, folder_id) VALUES (?, ?);",
-            (name, folder_id),
+            "INSERT INTO tools (name, description, enabled, folder_id) VALUES (?, ?, ?, ?);",
+            (name, description, int(enabled), folder_id),
         )
         self.conn.commit()
         return int(cur.lastrowid)
@@ -19,7 +25,7 @@ class ToolRepository:
     def get(self, tool_id: int) -> sqlite3.Row | None:
         return self.conn.execute(
             """
-            SELECT id, name, folder_id, created_at
+            SELECT id, name, description, enabled, folder_id, created_at
             FROM tools
             WHERE id = ?;
             """,
@@ -29,7 +35,7 @@ class ToolRepository:
     def list_in_folder(self, folder_id: int) -> Iterable[sqlite3.Row]:
         return self.conn.execute(
             """
-            SELECT id, name, folder_id, created_at
+            SELECT id, name, description, enabled, folder_id, created_at
             FROM tools
             WHERE folder_id = ?
             ORDER BY name;
@@ -37,10 +43,30 @@ class ToolRepository:
             (folder_id,),
         ).fetchall()
 
-    def update(self, tool_id: int, name: str) -> None:
+    def update(
+        self,
+        tool_id: int,
+        name: str,
+        *,
+        description: str | None = None,
+        enabled: bool | None = None,
+        folder_id: int | None = None,
+    ) -> None:
+        fields = ["name = ?"]
+        params: list[object] = [name]
+        if description is not None:
+            fields.append("description = ?")
+            params.append(description)
+        if enabled is not None:
+            fields.append("enabled = ?")
+            params.append(int(enabled))
+        if folder_id is not None:
+            fields.append("folder_id = ?")
+            params.append(folder_id)
+        params.append(tool_id)
         self.conn.execute(
-            "UPDATE tools SET name = ? WHERE id = ?;",
-            (name, tool_id),
+            f"UPDATE tools SET {', '.join(fields)} WHERE id = ?;",
+            params,
         )
         self.conn.commit()
 
@@ -60,8 +86,8 @@ class ToolRepository:
         if row is None:
             raise ValueError(f"Tool {tool_id} not found")
         cur = self.conn.execute(
-            "INSERT INTO tools (name, folder_id) VALUES (?, ?);",
-            (f"{row['name']} (copy)", target_folder_id),
+            "INSERT INTO tools (name, description, enabled, folder_id) VALUES (?, ?, ?, ?);",
+            (f"{row['name']} (copy)", row["description"], row["enabled"], target_folder_id),
         )
         new_tool_id = int(cur.lastrowid)
         labels = self.conn.execute(
