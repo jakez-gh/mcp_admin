@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>MCP Admin</h1>
+        <p>Manage tools, folders, and labels</p>
+      </div>
+      <div class="header-actions">
+        <button id="refresh-data" class="secondary">Refresh</button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Folders</h2>
+            <button id="new-folder">New folder</button>
+          </div>
+          <div class="panel-body" id="folder-tree"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Labels</h2>
+            <button id="new-label">New label</button>
+          </div>
+          <div class="panel-body" id="label-tree"></div>
+        </section>
+      </aside>
+
+      <section class="main">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Search tools</h2>
+          </div>
+          <div class="panel-body">
+            <form id="search-form" class="search-form">
+              <label>
+                Folder path
+                <input type="text" id="folder-path" placeholder="/engineering/agents" />
+              </label>
+              <fieldset class="labels-filter">
+                <legend>Filter by labels</legend>
+                <div id="label-filters" class="checkbox-grid"></div>
+              </fieldset>
+              <label>
+                Text search
+                <input type="text" id="tool-search" placeholder="Name or description" />
+              </label>
+              <div class="search-actions">
+                <button type="submit">Search</button>
+                <button type="button" id="clear-search" class="secondary">Clear</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Tools</h2>
+            <button id="new-tool">New tool</button>
+          </div>
+          <div class="panel-body">
+            <div class="tool-grid">
+              <table class="tool-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Folder</th>
+                    <th>Labels</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tool-list"></tbody>
+              </table>
+              <aside class="tool-editor" id="tool-editor">
+                <h3>Tool details</h3>
+                <form id="tool-form">
+                  <input type="hidden" id="tool-id" />
+                  <label>
+                    Name
+                    <input type="text" id="tool-name" required />
+                  </label>
+                  <label>
+                    Description
+                    <textarea id="tool-description" rows="4"></textarea>
+                  </label>
+                  <label class="toggle">
+                    <input type="checkbox" id="tool-enabled" />
+                    Enabled
+                  </label>
+                  <label>
+                    Folder
+                    <select id="tool-folder"></select>
+                  </label>
+                  <fieldset>
+                    <legend>Labels</legend>
+                    <div id="tool-labels" class="checkbox-grid"></div>
+                  </fieldset>
+                  <div class="form-actions">
+                    <button type="submit">Save</button>
+                    <button type="button" id="delete-tool" class="danger">Delete</button>
+                  </div>
+                </form>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Move tool</h2>
+          </div>
+          <div class="panel-body">
+            <form id="move-tool-form" class="move-form">
+              <label>
+                Tool
+                <select id="move-tool"></select>
+              </label>
+              <label>
+                Destination folder
+                <select id="move-folder"></select>
+              </label>
+              <button type="submit">Move</button>
+            </form>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <h3 id="modal-title"></h3>
+        <form id="modal-form">
+          <input type="hidden" id="modal-type" />
+          <input type="hidden" id="modal-id" />
+          <label>
+            Name
+            <input type="text" id="modal-name" required />
+          </label>
+          <label id="modal-parent-wrapper">
+            Parent folder
+            <select id="modal-parent"></select>
+          </label>
+          <div class="form-actions">
+            <button type="submit">Save</button>
+            <button type="button" id="modal-cancel" class="secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
