@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+
+cryptography = pytest.importorskip("cryptography")
 from cryptography.fernet import Fernet
 
 from server import config, storage
