@@ -32,3 +32,20 @@ def test_find_tool_returns_nested_node() -> None:
 
     assert found is not None
     assert found.name == "report"
+
+
+def test_iter_tree_includes_root_and_children() -> None:
+    definitions = [
+        {
+            "name": "messaging",
+            "label": "Messaging",
+            "children": [{"name": "echo", "label": "Echo"}],
+        }
+    ]
+    root = discover_tools(definitions)
+
+    from mcp_admin.tools.registry import iter_tree
+
+    names = [node.name for node in iter_tree(root)]
+
+    assert names == ["root", "messaging", "echo"]

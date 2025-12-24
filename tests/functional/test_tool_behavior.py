@@ -22,3 +22,12 @@ def test_label_navigation_returns_full_path() -> None:
     labels = get_label_path(root, "echo")
 
     assert labels == ["Root", "Messaging", "Echo"]
+
+
+def test_toggle_tool_returns_false_for_missing_tool() -> None:
+    definitions = [{"name": "echo", "label": "Echo", "enabled": True}]
+    root = discover_tools(definitions)
+
+    result = toggle_tool(root, "missing", False)
+
+    assert result is False

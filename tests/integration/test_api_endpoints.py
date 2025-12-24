@@ -39,3 +39,19 @@ def test_tool_label_endpoint() -> None:
 
     assert response.status_code == 200
     assert response.json()["labels"][-1] == "Echo"
+
+
+def test_toggle_tool_endpoint_returns_404_for_missing_tool() -> None:
+    client = TestClient(create_app())
+
+    response = client.post("/tools/missing/enable", json={"enabled": True})
+
+    assert response.status_code == 404
+
+
+def test_tool_label_endpoint_returns_404_for_missing_tool() -> None:
+    client = TestClient(create_app())
+
+    response = client.get("/tools/missing/labels")
+
+    assert response.status_code == 404
