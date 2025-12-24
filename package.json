@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "lint": "node --check web/app.js web/lib.js web/api.js",
+    "test": "node --test",
+    "test:unit": "node --test web/__tests__/unit/*.test.js",
+    "test:integration": "node --test web/__tests__/integration/*.test.js",
+    "test:e2e": "node --test web/__tests__/e2e/*.test.js"
   }
 }

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildFolderTree, buildToolQueryParams } from "../lib.js";
+import { buildFolderTree, buildToolQueryParams } from "../../lib.js";
 
 test("buildFolderTree nests folders and preserves roots", () => {
   const folders = [

@@ -1,3 +1,4 @@
+import { apiRequest } from "./api.js";
 import { buildFolderTree, buildToolQueryParams } from "./lib.js";
 
 const state = {
@@ -42,27 +43,6 @@ const elements = {
 };
 
 const API_BASE = "";
-
-async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed (${response.status})`);
-  }
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  return response.json();
-}
 
 function showToast(message, isError = false) {
   elements.toast.textContent = message;
@@ -299,8 +279,8 @@ function closeModal() {
 async function loadData() {
   try {
     const [folders, labels] = await Promise.all([
-      apiRequest("/api/folders"),
-      apiRequest("/api/labels"),
+      apiRequest("/api/folders", {}, API_BASE),
+      apiRequest("/api/labels", {}, API_BASE),
     ]);
     state.folders = folders;
     state.labels = labels;
@@ -322,7 +302,7 @@ async function loadTools(query = {}) {
   const params = buildToolQueryParams(query);
   const path = params ? `/api/tools?${params}` : "/api/tools";
   try {
-    const tools = await apiRequest(path);
+    const tools = await apiRequest(path, {}, API_BASE);
     state.tools = tools;
     renderTools();
     renderMoveTools();
@@ -377,12 +357,12 @@ async function saveTool(event) {
       saved = await apiRequest(`/api/tools/${toolId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     } else {
       saved = await apiRequest("/api/tools", {
         method: "POST",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     }
     showToast("Tool saved.");
     await loadTools();
@@ -400,7 +380,7 @@ async function deleteTool() {
     return;
   }
   try {
-    await apiRequest(`/api/tools/${toolId}`, { method: "DELETE" });
+    await apiRequest(`/api/tools/${toolId}`, { method: "DELETE" }, API_BASE);
     showToast("Tool deleted.");
     elements.toolForm.reset();
     state.activeTool = null;
@@ -422,12 +402,12 @@ async function createOrUpdateFolder(event) {
       await apiRequest(`/api/folders/${folderId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     } else {
       await apiRequest("/api/folders", {
         method: "POST",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     }
     showToast("Folder saved.");
     closeModal();
@@ -446,12 +426,12 @@ async function createOrUpdateLabel(event) {
       await apiRequest(`/api/labels/${labelId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     } else {
       await apiRequest("/api/labels", {
         method: "POST",
         body: JSON.stringify(payload),
-      });
+      }, API_BASE);
     }
     showToast("Label saved.");
     closeModal();
@@ -463,7 +443,7 @@ async function createOrUpdateLabel(event) {
 
 async function deleteFolder(folderId) {
   try {
-    await apiRequest(`/api/folders/${folderId}`, { method: "DELETE" });
+    await apiRequest(`/api/folders/${folderId}`, { method: "DELETE" }, API_BASE);
     showToast("Folder deleted.");
     await loadData();
   } catch (error) {
@@ -473,7 +453,7 @@ async function deleteFolder(folderId) {
 
 async function deleteLabel(labelId) {
   try {
-    await apiRequest(`/api/labels/${labelId}`, { method: "DELETE" });
+    await apiRequest(`/api/labels/${labelId}`, { method: "DELETE" }, API_BASE);
     showToast("Label deleted.");
     await loadData();
   } catch (error) {
@@ -486,7 +466,7 @@ async function moveToolToFolder(toolId, folderId) {
     await apiRequest(`/api/tools/${toolId}/move`, {
       method: "POST",
       body: JSON.stringify({ folderId }),
-    });
+    }, API_BASE);
     showToast("Tool moved.");
     await loadTools();
   } catch (error) {
