@@ -1,12 +1,13 @@
+import importlib
 from pathlib import Path
 
 import pytest
 
-cryptography = pytest.importorskip("cryptography")
-from cryptography.fernet import Fernet
-
 from server import config, storage
 from server.tools.gmail import tool_metadata
+
+pytest.importorskip("cryptography")
+Fernet = importlib.import_module("cryptography.fernet").Fernet
 
 
 def test_tool_metadata_includes_token_status(tmp_path: Path) -> None:

@@ -1,13 +1,17 @@
 import sqlite3
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 BASE_DIR = Path(__file__).resolve().parent
 MIGRATIONS_DIR = BASE_DIR / "migrations"
 
 
-def get_connection(path: str | Path = ":memory:") -> sqlite3.Connection:
-    conn = sqlite3.connect(path)
+def get_connection(
+    path: str | Path = ":memory:",
+    *,
+    check_same_thread: bool = True,
+) -> sqlite3.Connection:
+    conn = sqlite3.connect(path, check_same_thread=check_same_thread)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn

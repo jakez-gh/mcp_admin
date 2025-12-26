@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -9,7 +9,7 @@ class Tool:
     name: str
     description: str
     folder_id: str
-    labels: List[str] = field(default_factory=list)
+    labels: list[str] = field(default_factory=list)
     enabled: bool = True
     hidden: bool = False
 
@@ -20,10 +20,10 @@ class BaseTool:
     def __init__(self, metadata: Tool) -> None:
         self.metadata = metadata
 
-    def run(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, payload: dict[str, Any]) -> dict[str, Any]:
         raise NotImplementedError("Tools must implement run().")
 
-    def as_mcp_tool(self) -> Dict[str, Any]:
+    def as_mcp_tool(self) -> dict[str, Any]:
         return {
             "name": self.metadata.name,
             "description": self.metadata.description,

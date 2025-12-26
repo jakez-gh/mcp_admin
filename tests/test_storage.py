@@ -1,11 +1,12 @@
+import importlib
 from pathlib import Path
 
 import pytest
 
-cryptography = pytest.importorskip("cryptography")
-from cryptography.fernet import Fernet
-
 from server import config, storage
+
+pytest.importorskip("cryptography")
+Fernet = importlib.import_module("cryptography.fernet").Fernet
 
 
 def test_store_and_fetch_refresh_token(tmp_path: Path) -> None:

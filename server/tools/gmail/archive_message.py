@@ -3,7 +3,6 @@ import httpx
 from server import storage
 from server.oauth import refresh_access_token
 
-
 GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1"
 
 
