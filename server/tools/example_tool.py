@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from server.tools.base import BaseTool, Tool
 
@@ -18,5 +18,5 @@ class ExampleEchoTool(BaseTool):
             )
         )
 
-    def run(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, payload: dict[str, Any]) -> dict[str, Any]:
         return {"echo": payload}

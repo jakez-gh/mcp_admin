@@ -3,10 +3,9 @@ import base64
 import pytest
 
 cryptography = pytest.importorskip("cryptography")
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet  # noqa: E402
 
-from server import config
-from server import oauth
+from server import config, oauth  # noqa: E402
 
 
 def test_state_round_trip() -> None:

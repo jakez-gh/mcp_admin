@@ -1,9 +1,7 @@
 import sqlite3
-from typing import List, Optional
 
 from server import config
 from server.crypto import decrypt, encrypt
-
 
 CREATE_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS gmail_tokens (
@@ -49,14 +47,14 @@ def store_refresh_token(email: str, refresh_token: str) -> None:
 
 
 
-def list_accounts() -> List[TokenRecord]:
+def list_accounts() -> list[TokenRecord]:
     with sqlite3.connect(config.DB_PATH) as conn:
         rows = conn.execute("SELECT email, refresh_token_encrypted FROM gmail_tokens").fetchall()
     return [TokenRecord(email=row[0], has_token=bool(row[1])) for row in rows]
 
 
 
-def get_refresh_token(email: str) -> Optional[str]:
+def get_refresh_token(email: str) -> str | None:
     with sqlite3.connect(config.DB_PATH) as conn:
         row = conn.execute(
             "SELECT refresh_token_encrypted FROM gmail_tokens WHERE email = ?",
