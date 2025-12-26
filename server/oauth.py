@@ -1,4 +1,3 @@
-from typing import Dict
 import base64
 import hashlib
 import hmac
@@ -64,7 +63,7 @@ def build_auth_url(state: str) -> str:
     return f"{GOOGLE_AUTH_URL}?{query}"
 
 
-def exchange_code_for_tokens(code: str) -> Dict[str, str]:
+def exchange_code_for_tokens(code: str) -> dict[str, str]:
     payload = {
         "client_id": config.GMAIL_CLIENT_ID,
         "client_secret": config.GMAIL_CLIENT_SECRET,
@@ -77,7 +76,7 @@ def exchange_code_for_tokens(code: str) -> Dict[str, str]:
     return response.json()
 
 
-def refresh_access_token(refresh_token: str) -> Dict[str, str]:
+def refresh_access_token(refresh_token: str) -> dict[str, str]:
     payload = {
         "client_id": config.GMAIL_CLIENT_ID,
         "client_secret": config.GMAIL_CLIENT_SECRET,

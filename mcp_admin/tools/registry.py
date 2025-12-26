@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable, List, Optional
 
 
 @dataclass
@@ -9,7 +9,7 @@ class ToolNode:
     name: str
     label: str
     enabled: bool = True
-    children: List["ToolNode"] = field(default_factory=list)
+    children: list[ToolNode] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -29,7 +29,7 @@ def _build_node(definition: dict) -> ToolNode:
     )
 
 
-def discover_tools(definitions: List[dict]) -> ToolNode:
+def discover_tools(definitions: list[dict]) -> ToolNode:
     root = ToolNode(name="root", label="Root", enabled=True)
     root.children = [_build_node(definition) for definition in definitions]
     return root
@@ -41,7 +41,7 @@ def iter_tree(root: ToolNode) -> Iterable[ToolNode]:
         yield from iter_tree(child)
 
 
-def find_tool(root: ToolNode, name: str) -> Optional[ToolNode]:
+def find_tool(root: ToolNode, name: str) -> ToolNode | None:
     for node in iter_tree(root):
         if node.name == name:
             return node
@@ -56,8 +56,8 @@ def toggle_tool(root: ToolNode, name: str, enabled: bool) -> bool:
     return True
 
 
-def get_label_path(root: ToolNode, name: str) -> List[str]:
-    def walk(node: ToolNode, labels: List[str]) -> Optional[List[str]]:
+def get_label_path(root: ToolNode, name: str) -> list[str]:
+    def walk(node: ToolNode, labels: list[str]) -> list[str] | None:
         if node.name == name:
             return labels + [node.label]
         for child in node.children:

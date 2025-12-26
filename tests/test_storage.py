@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 cryptography = pytest.importorskip("cryptography")
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet  # noqa: E402
 
-from server import config, storage
+from server import config, storage  # noqa: E402
 
 
 def test_store_and_fetch_refresh_token(tmp_path: Path) -> None:

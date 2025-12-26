@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 
@@ -14,11 +14,11 @@ def create_app() -> FastAPI:
     registry.register_many(instantiate_tools())
 
     @app.get("/mcp/tools")
-    def list_tools() -> Dict[str, Any]:
+    def list_tools() -> dict[str, Any]:
         return {"tools": registry.list_tools()}
 
     @app.post("/mcp/tools/{tool_name}")
-    def run_tool(tool_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def run_tool(tool_name: str, payload: dict[str, Any]) -> dict[str, Any]:
         tool = registry.tool(tool_name)
         if tool is None:
             raise HTTPException(status_code=404, detail="Tool not found")

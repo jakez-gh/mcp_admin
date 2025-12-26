@@ -1,9 +1,8 @@
 """Administration and serving of MCP tools."""
 
-from .db import get_connection, apply_migrations
-
-
 from typing import Any
+
+from .db import apply_migrations, get_connection
 
 
 def create_app(*args: Any, **kwargs: Any):

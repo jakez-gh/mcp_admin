@@ -5,8 +5,8 @@ import functools
 import http.server
 import socketserver
 import threading
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 
@@ -36,35 +36,33 @@ def run_ui_server() -> Iterator[str]:
 def test_admin_ui_toggle_and_labels() -> None:
     from playwright.sync_api import sync_playwright
 
-    with run_ui_server() as ui_url:
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto(ui_url)
+    with run_ui_server() as ui_url, sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto(ui_url)
 
-            page.get_by_test_id("toggle-echo").click()
-            status = page.get_by_test_id("status-echo").text_content()
-            assert status == "Disabled"
+        page.get_by_test_id("toggle-echo").click()
+        status = page.get_by_test_id("status-echo").text_content()
+        assert status == "Disabled"
 
-            page.get_by_test_id("next-label").click()
-            label = page.get_by_test_id("label-current").text_content()
-            assert label == "Messaging"
+        page.get_by_test_id("next-label").click()
+        label = page.get_by_test_id("label-current").text_content()
+        assert label == "Messaging"
 
-            browser.close()
+        browser.close()
 
 
 def test_admin_ui_label_cycles_to_leaf() -> None:
     from playwright.sync_api import sync_playwright
 
-    with run_ui_server() as ui_url:
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto(ui_url)
+    with run_ui_server() as ui_url, sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto(ui_url)
 
-            page.get_by_test_id("next-label").click()
-            page.get_by_test_id("next-label").click()
-            label = page.get_by_test_id("label-current").text_content()
-            assert label == "Echo"
+        page.get_by_test_id("next-label").click()
+        page.get_by_test_id("next-label").click()
+        label = page.get_by_test_id("label-current").text_content()
+        assert label == "Echo"
 
-            browser.close()
+        browser.close()
