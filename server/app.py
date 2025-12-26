@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
@@ -13,7 +11,6 @@ from server.oauth import (
 )
 from server.tools import all_tool_metadata
 
-
 app = FastAPI(title="MCP Admin")
 
 
@@ -26,9 +23,10 @@ async def startup() -> None:
 async def gmail_admin() -> str:
     status = storage.token_status()
     accounts = storage.list_accounts()
-    accounts_html = "".join(
-        f"<li>{account.email} (token stored)</li>" for account in accounts
-    ) or "<li>No accounts connected</li>"
+    accounts_html = (
+        "".join(f"<li>{account.email} (token stored)</li>" for account in accounts)
+        or "<li>No accounts connected</li>"
+    )
     return f"""
     <html>
       <head><title>Gmail اتصال</title></head>
@@ -56,7 +54,7 @@ async def gmail_connect() -> RedirectResponse:
 
 
 @app.get("/admin/gmail/callback", response_class=HTMLResponse)
-async def gmail_callback(code: Optional[str] = None, state: Optional[str] = None) -> str:
+async def gmail_callback(code: str | None = None, state: str | None = None) -> str:
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing OAuth code or state")
     if not verify_state(state):

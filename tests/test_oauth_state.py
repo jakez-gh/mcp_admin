@@ -1,12 +1,12 @@
 import base64
+import importlib
 
 import pytest
 
-cryptography = pytest.importorskip("cryptography")
-from cryptography.fernet import Fernet
+from server import config, oauth
 
-from server import config
-from server import oauth
+pytest.importorskip("cryptography")
+Fernet = importlib.import_module("cryptography.fernet").Fernet
 
 
 def test_state_round_trip() -> None:
